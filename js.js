@@ -39,7 +39,10 @@ const cars = [
         year: '2019',
         price: '1,975,000'
     },
-];
+] && JSON.parse(localStorage.getItem('cars')) || [];
+
+let updating = false;
+let updatingId = -1;
 
 function printCars() {
     const container = document.getElementById('container-cars');
@@ -56,6 +59,9 @@ function printCars() {
                         <button onclick="deleteCar(${entry.id})" class="btn btn-danger">
                             Eliminar
                         </button>
+                        <button onclick="enableUpdateEntry(${entry.id})" class="btn btn-warning">
+                            Actualizar
+                        </button>
                     </td>
                 </tr>`
     });
@@ -69,7 +75,34 @@ function deleteCar(id) {
     printCars();
 }
 
+function enableUpdateEntry(id) {
+    updatingId = id;
+    const entry = cars.find((entry) => entry.id === id);
+
+    document.getElementById('brand').value = entry.brand;
+
+    document.getElementById('model').value = entry.model;
+
+    document.getElementById('color').value = entry.color;
+
+    document.getElementById('year').value = entry.year;
+
+    document.getElementById('price').value = entry.price;
+
+    updating = true;
+
+    const button = document.getElementById('save');
+    button.textContent = 'Actualizar';
+    button.classList.remove('btn-primary');
+    button.classList.add('btn-warning');
+    document.getElementById('cancel').classList.remove('d-none');
+}
+
 function addEntry() {
+    if(updating) {
+        updateEntry();
+        return;
+    }
     const brand = document.getElementById('brand').value;
 
     const model = document.getElementById('model').value;
@@ -80,7 +113,10 @@ function addEntry() {
 
     const price = document.getElementById('price').value;
 
-    const id = cars[cars.length -1].id +1;
+    let id = 1;
+    if(cars.length > 0) {
+        id = cars[cars.length -1].id +1;
+    }
 
     const newEntry = {
         brand,
@@ -94,7 +130,47 @@ function addEntry() {
     cars.push(newEntry);
     printCars();
 
+    localStorage.setItem('cars', JSON.stringify(cars));
+
     document.getElementById('form-cars').reset();
+}
+
+function updateEntry() {
+    const entry = cars.find((entry) => entry.id === updatingId);
+
+    const brand = document.getElementById('brand').value;
+
+    const model = document.getElementById('model').value;
+
+    const color = document.getElementById('color').value;
+
+    const year = document.getElementById('year').value;
+
+    const price = document.getElementById('price').value;
+
+    entry.brand = brand;
+    entry.model = model;
+    entry.color = color;
+    entry.year = year;
+    entry.price = price;
+
+    printCars();
+
+    document.getElementById('form-cars').reset();
+
+    cancelEdition();
+}
+
+function cancelEdition() {
+    document.getElementById('form-cars').reset();
+
+    updating = false;
+    updatingId = -1;
+    const button = document.getElementById('save');
+    button.textContent = 'Submit';
+    button.classList.remove('btn-warning');
+    button.classList.add('btn-primary');
+    document.getElementById('cancel').classList.add('d-none');
 }
 
 printCars();
